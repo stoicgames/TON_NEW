@@ -1,140 +1,13 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en-us">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Unity Web Player | Portal Smash: Fungal Realm</title>
+    <title>Unity Web Player | TON_PORTAL_NEW</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
-    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <style>
-      :root {
-        /* iPhone 13 Pro CSS viewport: 390 × 844 */
-        --desktop-game-aspect: 390 / 844;
-      }
-
-      html, body {
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        overflow: hidden;
-        background: #000;
-        overscroll-behavior: none;
-        touch-action: none;
-      }
-
-      body {
-        position: fixed;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      /* Desktop Telegram: scale to the largest iPhone 13 Pro-shaped area
-         that fits inside the available Mini App window. */
-      #unity-container.unity-desktop {
-        position: relative !important;
-        left: auto !important;
-        top: auto !important;
-        transform: none !important;
-        width: min(100vw, calc(100dvh * 390 / 844)) !important;
-        height: min(100dvh, calc(100vw * 844 / 390)) !important;
-        aspect-ratio: var(--desktop-game-aspect);
-        overflow: hidden;
-        background: #000;
-      }
-
-      #unity-container.unity-desktop #unity-canvas {
-        display: block;
-        width: 100% !important;
-        height: 100% !important;
-      }
-
-      /* Mobile remains dynamic, but the game itself is always portrait.
-         In portrait it fills the live viewport. In landscape it is paused
-         behind a rotate-device overlay instead of being stretched. */
-      #unity-container.unity-mobile {
-        position: fixed !important;
-        inset: 0 !important;
-        width: 100vw !important;
-        height: 100dvh !important;
-        overflow: hidden;
-        background: #000;
-      }
-
-      #unity-canvas.unity-mobile {
-        display: block;
-        width: 100vw !important;
-        height: 100dvh !important;
-      }
-
-      #portrait-lock-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 99999;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 24px;
-        box-sizing: border-box;
-        background: #000;
-        color: #fff;
-        text-align: center;
-        font-family: Arial, sans-serif;
-      }
-
-      #portrait-lock-overlay .portrait-lock-content {
-        max-width: 320px;
-      }
-
-      #portrait-lock-overlay .portrait-lock-icon {
-        display: block;
-        margin-bottom: 18px;
-        font-size: 64px;
-        line-height: 1;
-      }
-
-      #portrait-lock-overlay .portrait-lock-title {
-        margin: 0 0 8px;
-        font-size: 22px;
-        font-weight: 700;
-      }
-
-      #portrait-lock-overlay .portrait-lock-message {
-        margin: 0;
-        font-size: 16px;
-        line-height: 1.4;
-        opacity: 0.85;
-      }
-
-      body.orientation-landscape #portrait-lock-overlay {
-        display: flex;
-      }
-
-      body.orientation-landscape #unity-container {
-        visibility: hidden;
-        pointer-events: none;
-      }
-
-      #unity-footer {
-        display: none !important;
-      }
-
-      #unity-loading-bar {
-        position: absolute !important;
-      }
-    </style>
   </head>
   <body>
-    <div id="portrait-lock-overlay" role="dialog" aria-live="polite" aria-label="Portrait orientation required">
-      <div class="portrait-lock-content">
-        <span class="portrait-lock-icon" aria-hidden="true">↻</span>
-        <p class="portrait-lock-title">Portrait mode required</p>
-        <p class="portrait-lock-message">Rotate your device vertically to continue playing.</p>
-      </div>
-    </div>
-
     <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
       <div id="unity-loading-bar">
@@ -214,61 +87,26 @@
       // JS_FileSystem_Sync() behavior, but in future Unity version, this will be
       // expected to change.
 
-      const mobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-        || (navigator.maxTouchPoints > 1 && Math.min(screen.width, screen.height) <= 900);
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        // Mobile device style: fill the whole browser client area with the game canvas:
 
-      const unityContainer = document.querySelector("#unity-container");
-
-      if (mobileDevice) {
-        // Mobile: use Telegram/browser's live viewport dimensions.
-        unityContainer.className = "unity-mobile";
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+        document.querySelector("#unity-container").className = "unity-mobile";
         canvas.className = "unity-mobile";
 
-        // To lower canvas resolution on mobile devices, uncomment:
+        // To lower canvas resolution on mobile devices to gain some
+        // performance, uncomment the following line:
         // config.devicePixelRatio = 1;
+
+
       } else {
-        // Desktop Telegram: the CSS above keeps the game at the
-        // iPhone 13 Pro aspect ratio (390:844) while scaling to fit.
-        unityContainer.className = "unity-desktop";
-        canvas.className = "unity-desktop";
+        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
+        canvas.style.width = "960px";
+        canvas.style.height = "600px";
       }
-
-      function updateOrientationState() {
-        const isLandscape = window.innerWidth > window.innerHeight;
-
-        // Desktop Telegram stays portrait-shaped through the fixed 390:844
-        // container. The rotate overlay is only needed on actual mobile devices.
-        document.body.classList.toggle(
-          "orientation-landscape",
-          mobileDevice && isLandscape
-        );
-      }
-
-      function refreshGameViewport() {
-        updateOrientationState();
-
-        // Reading the container size forces Unity's canvas observer to receive
-        // the final CSS dimensions after Telegram resizes its Mini App panel.
-        const rect = unityContainer.getBoundingClientRect();
-        canvas.style.width = rect.width + "px";
-        canvas.style.height = rect.height + "px";
-      }
-
-      window.addEventListener("resize", refreshGameViewport);
-      window.addEventListener("orientationchange", refreshGameViewport);
-
-      if (window.visualViewport) {
-        window.visualViewport.addEventListener("resize", refreshGameViewport);
-      }
-
-      // Expand inside Telegram when the Telegram WebApp bridge is available.
-      if (window.Telegram && window.Telegram.WebApp) {
-        window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.expand();
-      }
-
-      updateOrientationState();
-      requestAnimationFrame(refreshGameViewport);
 
       document.querySelector("#unity-loading-bar").style.display = "block";
 
