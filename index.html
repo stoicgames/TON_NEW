@@ -3,19 +3,388 @@
 
 <head>
   <meta charset="UTF-8" />
+
+  <!-- Telegram Mini App SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- PWA -->
   <link rel="manifest" href="/TON_NEW/site.webmanifest" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Yescoin - Unity Game Template</title>
-  <meta property="og:title" content="Yescoin - Unity Game Template" />
-  <meta property="og:image" content="/android-chrome-512x512.png" />
-  <script type="module" crossorigin src="/TON_NEW/assets/index-DzbbH6-Z.js"></script>
-  <link rel="modulepreload" crossorigin href="/TON_NEW/assets/react-CLl2PvAp.js">
-  <link rel="stylesheet" crossorigin href="/TON_NEW/assets/index-BSDFlXwl.css">
+
+  <!-- Mobile / Telegram WebView -->
+  <meta
+    name="viewport"
+    content="width=device-width,
+             height=device-height,
+             initial-scale=1.0,
+             maximum-scale=1.0,
+             minimum-scale=1.0,
+             user-scalable=no,
+             viewport-fit=cover"
+  />
+
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="black-translucent"
+  />
+
+  <title>Portal Smash: Fungal Realm</title>
+
+  <meta
+    property="og:title"
+    content="Portal Smash: Fungal Realm"
+  />
+
+  <meta
+    property="og:image"
+    content="/android-chrome-512x512.png"
+  />
+
+
+  <!-- ======================================================
+       FORCE THE GAME UI TO BE PORTRAIT
+       ====================================================== -->
+
+  <style>
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+
+      width: 100%;
+      height: 100%;
+
+      overflow: hidden;
+
+      background: #000;
+
+      overscroll-behavior: none;
+
+      -webkit-user-select: none;
+      user-select: none;
+
+      -webkit-touch-callout: none;
+    }
+
+
+    #root {
+      position: fixed;
+
+      top: 0;
+      left: 0;
+
+      width: 100%;
+      height: 100%;
+
+      overflow: hidden;
+    }
+
+
+    /* ======================================================
+       LANDSCAPE BLOCKER
+       ====================================================== */
+
+    #portrait-orientation-warning {
+      display: none;
+
+      position: fixed;
+
+      top: 0;
+      left: 0;
+
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+
+      z-index: 2147483647;
+
+      background: #000;
+
+      color: #fff;
+
+      align-items: center;
+      justify-content: center;
+
+      text-align: center;
+
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+      box-sizing: border-box;
+
+      padding: 30px;
+    }
+
+
+    #portrait-orientation-warning .content {
+      display: flex;
+
+      flex-direction: column;
+
+      align-items: center;
+      justify-content: center;
+
+      gap: 20px;
+
+      max-width: 400px;
+    }
+
+
+    #portrait-orientation-warning .phone-icon {
+      font-size: 70px;
+
+      line-height: 1;
+
+      transform: rotate(-90deg);
+    }
+
+
+    #portrait-orientation-warning .title {
+      font-size: 24px;
+
+      font-weight: 700;
+
+      line-height: 1.2;
+    }
+
+
+    #portrait-orientation-warning .message {
+      font-size: 16px;
+
+      line-height: 1.5;
+
+      opacity: 0.8;
+    }
+
+
+    /*
+       If the device/browser viewport becomes landscape,
+       cover the game completely.
+    */
+
+    @media screen and (orientation: landscape) {
+
+      #portrait-orientation-warning {
+        display: flex;
+      }
+
+    }
+
+  </style>
+
+
+  <!-- Your existing build -->
+
+  <script
+    type="module"
+    crossorigin
+    src="/TON_NEW/assets/index-DzbbH6-Z.js">
+  </script>
+
+  <link
+    rel="modulepreload"
+    crossorigin
+    href="/TON_NEW/assets/react-CLl2PvAp.js"
+  >
+
+  <link
+    rel="stylesheet"
+    crossorigin
+    href="/TON_NEW/assets/index-BSDFlXwl.css"
+  >
+
 </head>
 
+
 <body>
+
+
+  <!-- ======================================================
+       GAME / REACT APP
+       ====================================================== -->
+
   <div id="root"></div>
+
+
+  <!-- ======================================================
+       PORTRAIT WARNING
+       ====================================================== -->
+
+  <div id="portrait-orientation-warning">
+
+    <div class="content">
+
+      <div class="phone-icon">
+        📱
+      </div>
+
+      <div class="title">
+        Portrait Mode
+      </div>
+
+      <div class="message">
+        Please rotate your device to portrait mode to continue playing.
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ======================================================
+       TELEGRAM + ORIENTATION HANDLING
+       ====================================================== -->
+
+  <script>
+
+    (function () {
+
+      /*
+       * Telegram Mini App setup
+       */
+
+      try {
+
+        if (
+          window.Telegram &&
+          window.Telegram.WebApp
+        ) {
+
+          const tg = window.Telegram.WebApp;
+
+          tg.ready();
+
+          /*
+           * Ask Telegram to use as much vertical space
+           * as possible.
+           */
+
+          tg.expand();
+
+        }
+
+      }
+      catch (error) {
+
+        console.warn(
+          "Telegram WebApp initialization:",
+          error
+        );
+
+      }
+
+
+      /*
+       * Attempt browser orientation lock where supported.
+       *
+       * This is only an enhancement.
+       *
+       * Telegram/iOS/Android WebViews are not guaranteed
+       * to allow orientation locking, so the CSS landscape
+       * blocker above remains the reliable fallback.
+       */
+
+      async function tryLockPortrait() {
+
+        try {
+
+          if (
+            screen.orientation &&
+            typeof screen.orientation.lock === "function"
+          ) {
+
+            await screen.orientation.lock("portrait");
+
+          }
+
+        }
+        catch (error) {
+
+          /*
+           * Expected on browsers/WebViews that do not permit
+           * orientation locking.
+           *
+           * Do not treat this as an application error.
+           */
+
+          console.log(
+            "Portrait orientation lock not available."
+          );
+
+        }
+
+      }
+
+
+      /*
+       * Try once after page load.
+       */
+
+      window.addEventListener(
+        "load",
+        function () {
+
+          tryLockPortrait();
+
+        }
+      );
+
+
+      /*
+       * Some browsers only allow orientation.lock()
+       * after a user interaction.
+       *
+       * Therefore try again on the first touch.
+       */
+
+      document.addEventListener(
+        "touchstart",
+        function portraitTouchHandler() {
+
+          tryLockPortrait();
+
+          document.removeEventListener(
+            "touchstart",
+            portraitTouchHandler
+          );
+
+        },
+        {
+          passive: true
+        }
+      );
+
+
+      /*
+       * Prevent common mobile page gestures from interfering
+       * with the WebGL game.
+       */
+
+      document.addEventListener(
+        "touchmove",
+        function (event) {
+
+          if (event.touches.length > 1) {
+
+            event.preventDefault();
+
+          }
+
+        },
+        {
+          passive: false
+        }
+      );
+
+    })();
+
+  </script>
+
+
 </body>
 
 </html>
